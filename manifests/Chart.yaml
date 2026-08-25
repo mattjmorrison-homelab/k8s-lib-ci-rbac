@@ -1,0 +1,4 @@
+apiVersion: v2
+name: k8s-ci-rbac
+description: Per-namespace RBAC for CI server-side dry-run checks, shared by every k8s- repo
+version: 0.1.0

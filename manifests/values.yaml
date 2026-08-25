@@ -1,0 +1,3 @@
+ciTargets:
+  - namespace: garage
+    apiGroups: ["", "apps", "batch", "external-secrets.io"]
