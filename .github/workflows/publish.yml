@@ -1,0 +1,44 @@
+name: Publish
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  publish:
+    runs-on: k8s-amd64
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
+        with:
+          version: "v3.21.4"
+      # This repo has its own OpenBao path/secret (homelab/k8s-lib-ci-rbac ->
+      # ZOT_CI_PASSWORD) rather than sharing one with other repos, so a
+      # leaked credential here can't be used to push charts on their behalf
+      # and vice versa. As of this writing that path/secret has not been
+      # created in OpenBao yet - a human still needs to add it manually
+      # before this workflow can succeed against a live registry.
+      - name: Fetch ZOT_CI_PASSWORD from OpenBao
+        env:
+          VAULT_ADDR: http://k8s-openbao.openbao.svc:8200
+        run: |
+          JWT=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+          LOGIN_PAYLOAD=$(jq -n --arg jwt "$JWT" --arg role github-actions-runner '{jwt: $jwt, role: $role}')
+          CLIENT_TOKEN=$(curl -sf -X POST "$VAULT_ADDR/v1/auth/kubernetes/login" -d "$LOGIN_PAYLOAD" \
+            | jq -r '.auth.client_token')
+
+          ZOT_CI_PASSWORD=$(curl -sf -H "X-Vault-Token: $CLIENT_TOKEN" "$VAULT_ADDR/v1/kv/data/homelab/k8s-lib-ci-rbac/ZOT_CI_PASSWORD" \
+            | jq -r '.data.data.value')
+
+          echo "::add-mask::$ZOT_CI_PASSWORD"
+          echo "ZOT_CI_PASSWORD=$ZOT_CI_PASSWORD" >> "$GITHUB_ENV"
+      - name: Log in to registry
+        run: helm registry login registry.morrisons.site -u ci --password-stdin <<< "$ZOT_CI_PASSWORD"
+      - name: Package chart
+        env:
+          SHORT_SHA: ${{ github.sha }}
+        run: |
+          SHORT_SHA="${SHORT_SHA:0:7}"
+          helm package manifests -d dist --version "0.1.0-$SHORT_SHA"
+      - name: Push chart
+        run: helm push dist/*.tgz oci://registry.morrisons.site/charts

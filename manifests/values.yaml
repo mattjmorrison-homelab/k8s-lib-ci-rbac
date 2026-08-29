@@ -1,9 +1,0 @@
-ciTargets:
-  - namespace: garage
-    apiGroups: ["", "apps", "batch", "external-secrets.io"]
-  - namespace: monitoring
-    apiGroups: ["", "apps", "batch", "external-secrets.io", "networking.k8s.io"]
-  - namespace: github-runner
-    apiGroups: ["", "apps", "external-secrets.io"]
-  - namespace: homepage
-    apiGroups: ["", "apps", "batch", "networking.k8s.io"]

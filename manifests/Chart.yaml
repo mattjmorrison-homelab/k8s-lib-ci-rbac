@@ -1,4 +1,5 @@
 apiVersion: v2
 name: k8s-ci-rbac
-description: Per-namespace RBAC for CI server-side dry-run checks, shared by every k8s- repo
-version: 0.1.0
+description: Shared Helm library chart providing per-namespace CI RBAC (ServiceAccount + Role/RoleBinding), included by other repos' own charts
+type: library
+version: 1.0.0
