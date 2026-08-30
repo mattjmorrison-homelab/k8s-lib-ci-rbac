@@ -68,6 +68,11 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
+@test "publish.yml fetches the lowercase-hyphenated zot-ci-password OpenBao secret path" {
+  run bash -c "grep -c 'kv/data/homelab/k8s-lib-ci-rbac/zot-ci-password' .github/workflows/publish.yml"
+  [ "$status" -eq 0 ]
+}
+
 @test "publish.yml authenticates to OpenBao using the k8s-lib-ci-rbac-publish role, not the shared github-actions-runner role" {
   run bash -c "grep -c -- '--arg role k8s-lib-ci-rbac-publish' .github/workflows/publish.yml"
   [ "$status" -eq 0 ]
