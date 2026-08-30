@@ -1,0 +1,5 @@
+{{ include "k8s-ci-rbac.rbac" (dict "namespace" "garage" "apiGroups" (list "" "apps" "batch")) }}
+---
+{{ include "k8s-ci-rbac.rbac" (dict "namespace" "monitoring" "apiGroups" (list "" "apps" "batch" "external-secrets.io") "serviceAccountName" "prometheus-ci") }}
+---
+{{ include "k8s-ci-rbac.rbac" (dict "namespace" "monitoring" "apiGroups" (list "" "apps" "batch" "networking.k8s.io") "serviceAccountName" "alertmanager-ci") }}
