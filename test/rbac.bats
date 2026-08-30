@@ -28,3 +28,10 @@ setup() {
   sa_count=$(echo "$output" | awk 'BEGIN{RS="---\n"} /kind: ServiceAccount/ && /namespace: monitoring/' | grep -c '^kind: ServiceAccount$')
   [ "$sa_count" -eq 2 ]
 }
+
+@test "token-issuer RoleBinding is labeled with ci-namespace matching the target namespace" {
+  run bash -c "helm dependency update test/harness && helm template test/harness"
+  [ "$status" -eq 0 ]
+  token_issuer_rb=$(echo "$output" | awk 'BEGIN{RS="---\n"} /kind: RoleBinding/ && /name: garage-ci-token-issuer/')
+  [[ "$token_issuer_rb" == *"ci-namespace: garage"* ]]
+}

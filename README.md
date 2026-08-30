@@ -78,7 +78,8 @@ For each call to the template:
   specifically — `resourceNames` restricted to that one ServiceAccount,
   nothing else. The runner's own identity never gains direct write
   access; only the per-namespace `-ci` identity does, and only for as
-  long as a freshly minted token (10 minutes) lasts.
+  long as a freshly minted token (10 minutes) lasts. The RoleBinding is
+  labeled with `ci-namespace: <namespace>` for external identification.
 
 No token or secret is ever stored anywhere — everything here is plain,
 declarative Kubernetes RBAC.

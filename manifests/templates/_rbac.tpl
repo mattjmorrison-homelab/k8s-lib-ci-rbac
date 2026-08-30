@@ -64,6 +64,8 @@ kind: RoleBinding
 metadata:
   name: {{ $serviceAccountName }}-token-issuer
   namespace: {{ $namespace }}
+  labels:
+    ci-namespace: {{ $namespace }}
 subjects:
   - kind: ServiceAccount
     name: github-runner-workload
