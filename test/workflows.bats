@@ -68,6 +68,13 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
+@test "publish.yml authenticates to OpenBao using the k8s-lib-ci-rbac-publish role, not the shared github-actions-runner role" {
+  run bash -c "grep -c -- '--arg role k8s-lib-ci-rbac-publish' .github/workflows/publish.yml"
+  [ "$status" -eq 0 ]
+  run bash -c "grep -c 'github-actions-runner' .github/workflows/publish.yml"
+  [ "$status" -ne 0 ]
+}
+
 @test "publish.yml logs into the registry with helm registry login" {
   run bash -c "grep -c 'helm registry login registry.morrisons.site' .github/workflows/publish.yml"
   [ "$status" -eq 0 ]
