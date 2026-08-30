@@ -13,17 +13,19 @@ jobs:
         with:
           version: "v3.21.4"
       # This repo has its own OpenBao path/secret (homelab/k8s-lib-ci-rbac ->
-      # ZOT_CI_PASSWORD) rather than sharing one with other repos, so a
-      # leaked credential here can't be used to push charts on their behalf
-      # and vice versa. As of this writing that path/secret has not been
-      # created in OpenBao yet - a human still needs to add it manually
+      # ZOT_CI_PASSWORD) and its own Kubernetes auth role (k8s-lib-ci-rbac-publish)
+      # rather than sharing with other repos, so a leaked credential here can't be
+      # used to push charts on their behalf and vice versa. The role is defined in
+      # admin-openbao and bound to github-runner-workload ServiceAccount with policy
+      # scoped to this repo's OpenBao path. As of this writing that path/secret has
+      # not been created in OpenBao yet - a human still needs to add it manually
       # before this workflow can succeed against a live registry.
       - name: Fetch ZOT_CI_PASSWORD from OpenBao
         env:
           VAULT_ADDR: http://k8s-openbao.openbao.svc:8200
         run: |
           JWT=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-          LOGIN_PAYLOAD=$(jq -n --arg jwt "$JWT" --arg role github-actions-runner '{jwt: $jwt, role: $role}')
+          LOGIN_PAYLOAD=$(jq -n --arg jwt "$JWT" --arg role k8s-lib-ci-rbac-publish '{jwt: $jwt, role: $role}')
           CLIENT_TOKEN=$(curl -sf -X POST "$VAULT_ADDR/v1/auth/kubernetes/login" -d "$LOGIN_PAYLOAD" \
             | jq -r '.auth.client_token')
 
