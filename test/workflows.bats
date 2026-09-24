@@ -61,16 +61,23 @@ setup() {
   [ "$status" -ne 0 ]
 }
 
-@test "publish.yml fetches ZOT_CI_PASSWORD from the homelab/k8s-lib-ci-rbac OpenBao path" {
-  run bash -c "grep -c 'homelab/k8s-lib-ci-rbac' .github/workflows/publish.yml"
+@test "publish.yml fetches ZOT_PASSWORD from its own dedicated per-consumer Zot credential" {
+  run bash -c "grep -c 'homelab/service/k8s-zot/k8s-lib-ci-rbac/zot-publish' .github/workflows/publish.yml"
   [ "$status" -eq 0 ]
-  run bash -c "grep -c 'ZOT_CI_PASSWORD' .github/workflows/publish.yml"
+  run bash -c "grep -c 'ZOT_PASSWORD' .github/workflows/publish.yml"
   [ "$status" -eq 0 ]
 }
 
-@test "publish.yml fetches the lowercase-hyphenated zot-ci-password OpenBao secret path" {
+@test "publish.yml no longer references the old, never-populated k8s-lib-ci-rbac/zot-ci-password path" {
   run bash -c "grep -c 'kv/data/homelab/k8s-lib-ci-rbac/zot-ci-password' .github/workflows/publish.yml"
+  [ "$status" -ne 0 ]
+}
+
+@test "publish.yml logs in as its own dedicated Zot user, not the shared ci admin" {
+  run bash -c "grep -c -- '-u k8s-lib-ci-rbac ' .github/workflows/publish.yml"
   [ "$status" -eq 0 ]
+  run bash -c "grep -c -- '-u ci ' .github/workflows/publish.yml"
+  [ "$status" -ne 0 ]
 }
 
 @test "publish.yml authenticates to OpenBao using the k8s-lib-ci-rbac-publish role, not the shared github-actions-runner role" {
